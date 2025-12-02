@@ -1,36 +1,64 @@
 import { PlaylistCard } from '@/entities/playlist'
-import { MOCK_PLAYLISTS } from '@/features/playlists'
 import { MOCK_HASHTAGS, TagsList } from '@/features/tags'
-import { MOCK_TRACKS, TrackCard } from '@/features/tracks'
+import { TrackCard } from '@/features/tracks'
 
 import { ContentList, PageWrapper } from '../common'
 import s from './MainPage.module.css'
+import { usePlaylists } from '@/features/playlists/api/use-playlists.query'
+import { useTracksQuery } from '@/pages/TracksPage/model/useTracksQuery'
 
 export const MainPage = () => {
+  const { data: playlistsResponse } = usePlaylists({
+    pageSize: 10,
+    sortBy: 'addedAt',
+    sortDirection: 'desc',
+  })
+
+  const playlists = playlistsResponse?.data?.data || []
+
+  const { data: TracksResponse } = useTracksQuery({
+    pageSize: 10,
+  })
+
+  const tracks = TracksResponse?.data || []
+
+  const trackDetails = tracks.reduce(
+    (acc, query) => {
+      if (query.id) {
+        acc[query.id] = query
+      }
+      return acc
+    },
+    {} as Record<string, any>
+  )
+
   return (
     <PageWrapper className={s.mainPage}>
       <TagsList tags={MOCK_HASHTAGS} />
       <ContentList
         title="New playlists"
-        data={MOCK_PLAYLISTS}
+        data={playlists}
         renderItem={(playlist) => (
           <PlaylistCard
-            id={playlist.data.id}
-            title={playlist.data.attributes.title}
-            images={playlist.data.attributes.images}
-            description={playlist.data.attributes.description}
+            id={playlist.id}
+            title={playlist.attributes.title}
+            images={playlist.attributes.images}
+            description={playlist.attributes.description}
           />
         )}
       />
       <ContentList
         title="New tracks"
-        data={MOCK_TRACKS}
+        data={tracks}
         renderItem={(track) => (
           <TrackCard
-            artists={track.attributes.artist}
+            artists={trackDetails.artists?.[0]?.name || 'Artist'}
             currentReaction={track.attributes.currentUserReaction}
             id={track.id}
-            image={track.attributes.images.main[0].url}
+            image={
+              trackDetails?.data?.attributes?.images?.main?.[0]?.url ||
+              track.attributes.images.main?.[0]?.url
+            }
             likesCount={track.attributes.likesCount}
             onDislike={() => {}}
             onLike={() => {}}
