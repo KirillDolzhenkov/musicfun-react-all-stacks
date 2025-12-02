@@ -1,29 +1,20 @@
 import * as React from 'react'
+import { type ChangeEvent, useState } from 'react'
 
 import { MOCK_ARTISTS } from '@/features/artists/api/artists-api'
 import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
 import { MOCK_HASHTAGS } from '@/features/tags'
 import { TracksTable } from '@/features/tracks'
+import { TrackRowContainer } from '@/features/tracks/ui/TrackRowContainer/TrackRowContainer.tsx'
+import { tracksSortFunction } from '@/pages/TracksPage/TracksSortFunction.ts'
 import { usePlayerStore } from '@/player/model/player-store.ts'
 import { Autocomplete, Typography } from '@/shared/components'
-import { useInfiniteScroll } from '@/shared/hooks'
-import {
-  Autocomplete,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  ReactionButtons,
-  Typography,
-} from '@/shared/components'
 import { useDebounceValue, useInfiniteScroll } from '@/shared/hooks'
-import { MoreIcon } from '@/shared/icons'
 import { VU } from '@/shared/utils'
+
 import { PageWrapper, SearchTextField, SortSelect } from '../common'
 import { useTracksInfinityQuery } from './model/useTracksInfinityQuery.ts'
 import s from './TracksPage.module.css'
-import { TrackRowContainer } from '@/features/tracks/ui/TrackRowContainer/TrackRowContainer.tsx'
-import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
-import { type ChangeEvent, useState } from 'react'
-import { tracksSortFunction } from '@/pages/TracksPage/TracksSortFunction.ts'
 
 const PAGE_SIZE = 10
 
@@ -49,40 +40,35 @@ export const TracksPage = () => {
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useTracksInfinityQuery(
       {
-      pageSize: PAGE_SIZE,
-      search: debouncedValue,
-      sortBy,
-      sortDirection,
-    },
+        pageSize: PAGE_SIZE,
+        search: debouncedValue,
+        sortBy,
+        sortDirection,
+      },
       {
         enabled: isAuthReady,
       }
     )
   const { play, currentTrack, currentTime } = usePlayerStore()
 
-  const { data: me } = useMeQuery()
-  const currentUserId = me?.userId
-
   const tracks = React.useMemo(() => {
     return VU.isNotEmptyArray(data?.pages) ? data.pages.map((page) => page.data).flat() : []
   }, [data?.pages])
   const tracksRowsData = React.useMemo(() => {
-    return VU.isNotEmptyArray(tracks)
-      ? tracks.map((track, index) => ({
-          index,
-          id: track.id,
-          title: track.attributes.title,
-          image: track.attributes.images.main?.[0]?.url,
-          addedAt: track.attributes.addedAt,
-          artists: [], //track.attributes.artists?.map((artist) => artist.name) || [],
-          // Todo: add duration for correct progress bar & duration visibility
-          duration: 0, //track.attributes.duration,
-          likesCount: track.attributes.likesCount,
-          dislikesCount: 0, // track.attributes.dislikesCount,
-          currentUserReaction: track.attributes.currentUserReaction,
-          ownerId: track.attributes.user.id,
-        }))
-      : []
+    return tracks.map((track, index) => ({
+      index,
+      id: track.id,
+      title: track.attributes.title,
+      image: track.attributes.images.main?.[0]?.url,
+      addedAt: track.attributes.addedAt,
+      artists: [], //track.attributes.artists?.map((artist) => artist.name) || [],
+      // Todo: add duration for correct progress bar & duration visibility
+      duration: 0, //track.attributes.duration,
+      likesCount: track.attributes.likesCount,
+      dislikesCount: 0, // track.attributes.dislikesCount,
+      currentUserReaction: track.attributes.currentUserReaction,
+      ownerId: track.attributes.user.id,
+    }))
   }, [tracks])
 
   const handleSearchTrack = (e: ChangeEvent<HTMLInputElement>) => {

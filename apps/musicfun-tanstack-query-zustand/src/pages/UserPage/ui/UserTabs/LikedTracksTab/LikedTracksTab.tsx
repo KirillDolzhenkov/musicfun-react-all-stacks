@@ -19,6 +19,7 @@ export const LikedTracksTab = () => {
         likesCount: track.attributes.likesCount,
         dislikesCount: track.attributes.dislikesCount,
         currentUserReaction: track.attributes.currentUserReaction,
+        ownerId: track.attributes.user.id,
       }))}
       renderTrackRow={(trackRow) => (
         <TrackRow

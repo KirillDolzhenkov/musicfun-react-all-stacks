@@ -1,18 +1,27 @@
+import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
 import { TrackRow } from '@/features/tracks/ui/TrackRow/TrackRow'
 import { ReactionButtons } from '@/shared/components'
 import { DropdownMenu, DropdownMenuTrigger } from '@/shared/components'
 import { MoreIcon } from '@/shared/icons'
-import type { TrackRowData } from '..'
+
 import { useTrackReactions } from '../../model/useTrackReactions'
+import type { TrackRowData } from '..'
 export interface TrackRowContainerProps {
   trackRow: TrackRowData
   currentTrack: { id: string } | null
   currentTime: number
   onPlayClick: (id: string) => void
 }
-export const TrackRowContainer = ({ trackRow, currentTrack, currentTime, onPlayClick }: TrackRowContainerProps) => {
+export const TrackRowContainer = ({
+  trackRow,
+  currentTrack,
+  currentTime,
+  onPlayClick,
+}: TrackRowContainerProps) => {
+  const { handleLike, handleDislike, handleRemoveReaction } = useTrackReactions(trackRow.id)
 
-    const { handleLike, handleDislike, handleRemoveReaction } = useTrackReactions(trackRow.id)
+  const { data: me } = useMeQuery()
+  const currentUserId = me?.userId
 
   return (
     <TrackRow
@@ -30,12 +39,14 @@ export const TrackRowContainer = ({ trackRow, currentTrack, currentTime, onPlayC
             onLike={handleLike}
             onRemoveReaction={handleRemoveReaction}
           />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <MoreIcon />
-            </DropdownMenuTrigger>
-          </DropdownMenu>
+          {trackRow.ownerId === currentUserId && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                {/* implement add to playlist (via popup, see figma) */}
+                <MoreIcon />
+              </DropdownMenuTrigger>
+            </DropdownMenu>
+          )}
         </>
       )}
     />

@@ -1,3 +1,5 @@
+import { useParams } from 'react-router'
+
 import { MOCK_PLAYLIST, PlaylistOverview } from '@/features/playlists'
 import { MOCK_TRACKS, TracksTable } from '@/features/tracks'
 import { TrackRow } from '@/features/tracks/ui/TrackRow/TrackRow'
@@ -6,7 +8,6 @@ import { ReactionButtons } from '@/shared/components'
 import { PageWrapper } from '../common'
 import s from './PlaylistPage.module.css'
 import { ControlPanel } from './ui/ControlPanel'
-import { useParams } from 'react-router'
 
 export const PlaylistPage = () => {
   const { id: playlistId } = useParams<{ id: string }>()
@@ -34,6 +35,7 @@ export const PlaylistPage = () => {
           likesCount: track.attributes.likesCount,
           dislikesCount: track.attributes.dislikesCount,
           currentUserReaction: track.attributes.currentUserReaction,
+          ownerId: track.attributes.user.id,
         }))}
         renderTrackRow={(trackRow) => (
           <TrackRow

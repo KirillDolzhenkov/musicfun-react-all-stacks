@@ -59,6 +59,7 @@ export const Default: Story = {
       dislikesCount: track.attributes.dislikesCount,
       currentUserReaction: track.attributes.currentUserReaction,
       duration: track.attributes.duration,
+      ownerId: track.attributes.user.id,
     })),
     renderTrackRow: (trackRow) => (
       <TrackRow
@@ -108,6 +109,7 @@ export const WithoutReactions: Story = {
       addedAt: track.attributes.addedAt,
       artists: track.attributes.artists?.map((artist) => artist.name) || [],
       duration: track.attributes.duration,
+      ownerId: track.attributes.user.id,
     })),
     renderTrackRow: (trackRow) => (
       <TrackRow

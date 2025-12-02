@@ -28,7 +28,6 @@ const DEFAULT_PAGE = 1
 export const TracksTab = () => {
   const [isUploadTrackModalOpen, setIsUploadTrackModalOpen] = useState(false) // STATE FOR TESTING
 
-
   const [pageNumber, setPageNumber] = useState<number>(DEFAULT_PAGE)
   const { id: userId } = useParams<{ id: string }>()
 
@@ -49,7 +48,6 @@ export const TracksTab = () => {
     [pageNumber, userId]
   )
 
-
   const { data, isLoading, isError } = useTracks(queryParams)
   const tracks = data?.data?.data ?? []
   const totalPages = data?.data?.meta.pagesCount ?? 1
@@ -61,7 +59,6 @@ export const TracksTab = () => {
   const handlePageChange = useCallback((page: SchemaGetTracksRequestPayload['pageNumber']) => {
     setPageNumber(page)
   }, [])
-
 
   // todo:task load user tracks
 
@@ -77,53 +74,48 @@ export const TracksTab = () => {
       {isLoading && <div>Loading tracks...</div>}
       {isError && <div>Failed to load tracks</div>}
       {!isLoading && !isError && tracks.length > 0 && (
-
-      <TracksTable
-        trackRows={tracks.map((track, index) => ({
-          index,
-          id: track.id,
-          title: track.attributes.title,
-          image: track.attributes.images.main?.[0]?.url,
-          addedAt: track.attributes.addedAt,
-          artists: track.attributes.artists?.map((artist) => artist.name) || [],
-          duration: track.attributes.duration,
-        }))}
-        renderTrackRow={(trackRow) => (
-          <TrackRow
-            trackRow={trackRow}
-            renderActionsCell={() => (
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <MoreIcon />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {/* todo:task if it's current logined user track, show edit popup and implement edit */}
-                  <DropdownMenuItem onClick={() => alert('Edit clicked!')}>Edit</DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      // todo:task implement feature
-                      alert('Add to playlist clicked!')
-                    }}>
-                    Add to playlist
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => alert('Show text song clicked!')}>
-                    Show text song
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          />
-        )}
-      />
-        )}
-
+        <TracksTable
+          trackRows={tracks.map((track, index) => ({
+            index,
+            id: track.id,
+            title: track.attributes.title,
+            image: track.attributes.images.main?.[0]?.url,
+            addedAt: track.attributes.addedAt,
+            artists: [], // track.attributes.artists?.map((artist) => artist.name) || [],
+            duration: 0, // track.attributes.duration,
+            ownerId: track.attributes.user.id,
+          }))}
+          renderTrackRow={(trackRow) => (
+            <TrackRow
+              trackRow={trackRow}
+              renderActionsCell={() => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <MoreIcon />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {/* todo:task if it's current logined user track, show edit popup and implement edit */}
+                    <DropdownMenuItem onClick={() => alert('Edit clicked!')}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        // todo:task implement feature
+                        alert('Add to playlist clicked!')
+                      }}>
+                      Add to playlist
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alert('Show text song clicked!')}>
+                      Show text song
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
+          )}
+        />
+      )}
 
       {totalPages > 1 && (
-        <Pagination
-          page={pageNumber}
-          pagesCount={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination page={pageNumber} pagesCount={totalPages} onPageChange={handlePageChange} />
       )}
     </>
   )
