@@ -7,10 +7,5 @@ export type RefreshRequestPayload = components['schemas']['RefreshRequestPayload
 
 export type LoginRequestPayload = components['schemas']['LoginRequestPayload']
 
-export const localStorageKeys = {
-  refreshToken: 'spotifun-refresh-token',
-  accessToken: 'spotifun-access-token',
-}
-
 export const getOauthRedirectUrl = (redirectUrl: string) =>
   getClientConfig().baseURL + `/auth/oauth-redirect?callbackUrl=${redirectUrl}`

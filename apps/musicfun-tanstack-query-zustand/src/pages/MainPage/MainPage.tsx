@@ -1,17 +1,21 @@
 import { PlaylistCard } from '@/entities/playlist'
+import { usePlaylists } from '@/features/playlists/api/use-playlists.query'
 import { MOCK_HASHTAGS, TagsList } from '@/features/tags'
 import { TrackCard } from '@/features/tracks'
+import { useTracksQuery } from '@/pages/TracksPage/model/useTracksQuery'
+import {
+  PathsPlaylistsGetParametersQuerySortBy,
+  PathsPlaylistsGetParametersQuerySortDirection,
+} from '@/shared/api/schema.ts'
 
 import { ContentList, PageWrapper } from '../common'
 import s from './MainPage.module.css'
-import { usePlaylists } from '@/features/playlists/api/use-playlists.query'
-import { useTracksQuery } from '@/pages/TracksPage/model/useTracksQuery'
 
 export const MainPage = () => {
   const { data: playlistsResponse } = usePlaylists({
     pageSize: 10,
-    sortBy: 'addedAt',
-    sortDirection: 'desc',
+    sortBy: PathsPlaylistsGetParametersQuerySortBy.addedAt,
+    sortDirection: PathsPlaylistsGetParametersQuerySortDirection.desc,
   })
 
   const playlists = playlistsResponse?.data?.data || []

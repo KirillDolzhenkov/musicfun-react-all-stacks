@@ -1,5 +1,6 @@
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query'
 
+import { tracksKeys } from '@/features/tracks/api/query-key-factory'
 import { getClient } from '@/shared/api/client.ts'
 import {
   PathsPlaylistsTracksGetParametersQueryPaginationType,
@@ -7,11 +8,13 @@ import {
 } from '@/shared/api/schema.ts'
 import { unwrap } from '@/shared/api/utils/unwrap.ts'
 import type { Strict } from '@/shared/types/strict.tsx'
-import { tracksKeys } from '@/features/tracks/api/query-key-factory'
 
 type TracksParams = Partial<SchemaGetTracksRequestPayload>
 
-export function useTracksInfinityQuery<P extends TracksParams>(params: Strict<TracksParams, P>, opts?: { enabled?: boolean }) {
+export function useTracksInfinityQuery<P extends TracksParams>(
+  params: Strict<TracksParams, P>,
+  opts?: { enabled?: boolean }
+) {
   return useInfiniteQuery({
     queryFn: ({ pageParam }) =>
       unwrap(

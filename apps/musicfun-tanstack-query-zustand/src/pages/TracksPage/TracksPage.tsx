@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { type ChangeEvent, useState } from 'react'
+import { type ChangeEvent, useCallback, useState } from 'react'
 
 import { MOCK_ARTISTS } from '@/features/artists/api/artists-api'
 import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
@@ -19,10 +19,6 @@ import s from './TracksPage.module.css'
 const PAGE_SIZE = 10
 
 export const TracksPage = () => {
-  const hasTokens = !!localStorage.getItem('accessToken') || !!localStorage.getItem('refreshToken')
-  const { data: me, isLoading: isMeLoading } = useMeQuery({ enabled: hasTokens })
-  const isAuthReady = hasTokens ? !isMeLoading : true
-
   const [hashtags, setHashtags] = React.useState<string[]>([])
   const [artists, setArtists] = React.useState<string[]>([])
   const [search, setSearch] = useState('')
@@ -31,24 +27,19 @@ export const TracksPage = () => {
 
   const { sortBy, sortDirection } = tracksSortFunction(sort)
 
-  const triggerRef = React.useRef<HTMLDivElement>(null)
-  const wrapperRef = React.useRef<HTMLDivElement>(null)
+  const triggerRef = React.useRef<HTMLDivElement | null>(null)
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null)
 
   // todo: task search tracks filter w/o trhotling/debounce
   // todo: add sorting;
 
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
-    useTracksInfinityQuery(
-      {
-        pageSize: PAGE_SIZE,
-        search: debouncedValue,
-        sortBy,
-        sortDirection,
-      },
-      {
-        enabled: isAuthReady,
-      }
-    )
+    useTracksInfinityQuery({
+      pageSize: PAGE_SIZE,
+      search: debouncedValue,
+      sortBy,
+      sortDirection,
+    })
   const { play, currentTrack, currentTime } = usePlayerStore()
 
   const tracks = React.useMemo(() => {
@@ -98,19 +89,20 @@ export const TracksPage = () => {
     [tracks, play]
   )
 
+  const infinityFetchNextPage = () => {
+    if (!isFetching && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage()
+    }
+  }
+
   useInfiniteScroll({
-    triggerRef,
-    wrapperRef,
-    callBack: () => {
-      if (!isFetching && hasNextPage && !isFetchingNextPage) {
-        void fetchNextPage()
-      }
-    },
+    targetElement: triggerRef.current,
+    rootElement: wrapperRef.current,
+    callBack: infinityFetchNextPage,
     rootMargin: '300px',
     threshold: 0.1,
   })
 
-  if (hasTokens && isMeLoading) return <>Loading user…</>
   if (isPending) {
     return <div>Loading...</div>
   }

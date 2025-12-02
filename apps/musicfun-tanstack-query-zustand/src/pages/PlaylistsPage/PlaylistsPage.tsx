@@ -42,7 +42,7 @@ const sortConfig: Record<SortOption, ISortConfig> = {
 
 export const PlaylistsPage = () => {
   const hasTokens = !!localStorage.getItem('accessToken') || !!localStorage.getItem('refreshToken')
-  const { data: me, isPending: isMeLoading } = useMeQuery({ enabled: hasTokens })
+  const { data: me, isPending: isMeLoading } = useMeQuery()
   const playlistsEnabled = !hasTokens || (!isMeLoading && !!me)
   const [pageNumber, setPageNumber] = useState<number>(DEFAULT_PAGE)
   const [search, setSearch] = useState<string>('')

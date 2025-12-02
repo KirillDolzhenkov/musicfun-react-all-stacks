@@ -19,7 +19,6 @@ export const useLoginMutation = () => {
       await cfg.saveAccessToken?.(data.data!.accessToken)
       await cfg.saveRefreshToken?.(data.data!.refreshToken)
 
-      await qc.invalidateQueries({ queryKey: ['auth', 'me'] })
       await qc.invalidateQueries()
     },
   })

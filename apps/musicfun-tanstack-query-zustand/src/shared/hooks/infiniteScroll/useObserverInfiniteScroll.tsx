@@ -38,42 +38,38 @@ import type { IUseObserverInfiniteScroll } from './useObserverInfiniteScroll.typ
  * };
  */
 
-const useObserverInfiniteScroll = <T extends HTMLElement>(props: IUseObserverInfiniteScroll<T>) => {
-  const { callBack, rootMargin = '100px 0px', threshold = 1.0, triggerRef, wrapperRef } = props
+const useObserverInfiniteScroll = (props: IUseObserverInfiniteScroll) => {
+  const { callBack, rootMargin = '100px 0px', threshold = 1.0, targetElement, rootElement } = props
 
-  const observer = React.useRef<IntersectionObserver | null>(null)
+  const observerRef = React.useRef<IntersectionObserver | null>(null)
+
+  console.log(' : ', [targetElement, rootElement])
 
   React.useEffect(() => {
-    const wrapperElement = wrapperRef ? wrapperRef.current : null
-    const triggerElement = triggerRef.current
-
-    if (callBack && triggerElement) {
+    console.log('💩 useEffect')
+    if (callBack && targetElement) {
       const options: IntersectionObserverInit = {
-        root: wrapperElement,
+        root: rootElement,
         rootMargin,
         threshold,
       }
 
-      observer.current = new IntersectionObserver(async ([entry]) => {
+      observerRef.current = new IntersectionObserver(async ([entry]) => {
         if (entry.isIntersecting) {
-          await callBack?.(entry)
+          callBack?.(entry)
         }
       }, options)
 
-      observer.current.observe(triggerElement)
+      observerRef.current.observe(targetElement)
     }
 
     return () => {
-      if (observer.current && triggerElement) {
-        observer.current.unobserve(triggerElement)
+      if (observerRef.current && targetElement) {
+        observerRef.current.unobserve(targetElement)
       }
     }
-  }, [callBack, rootMargin, threshold, triggerRef, wrapperRef])
-
-  return {
-    triggerRef,
-    wrapperRef,
-  }
+    //}, [callBack, rootMargin, threshold, triggerRef, wrapperRef])
+  }, [targetElement, rootElement])
 }
 
 export default useObserverInfiniteScroll
