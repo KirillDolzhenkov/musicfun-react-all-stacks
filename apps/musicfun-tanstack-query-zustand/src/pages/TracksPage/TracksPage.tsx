@@ -4,8 +4,9 @@ import { MOCK_ARTISTS } from '@/features/artists/api/artists-api'
 import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
 import { MOCK_HASHTAGS } from '@/features/tags'
 import { TracksTable } from '@/features/tracks'
-import { TrackRow } from '@/features/tracks/ui/TrackRow/TrackRow'
 import { usePlayerStore } from '@/player/model/player-store.ts'
+import { Autocomplete, Typography } from '@/shared/components'
+import { useInfiniteScroll } from '@/shared/hooks'
 import {
   Autocomplete,
   DropdownMenu,
@@ -16,16 +17,21 @@ import {
 import { useDebounceValue, useInfiniteScroll } from '@/shared/hooks'
 import { MoreIcon } from '@/shared/icons'
 import { VU } from '@/shared/utils'
-
 import { PageWrapper, SearchTextField, SortSelect } from '../common'
 import { useTracksInfinityQuery } from './model/useTracksInfinityQuery.ts'
 import s from './TracksPage.module.css'
+import { TrackRowContainer } from '@/features/tracks/ui/TrackRowContainer/TrackRowContainer.tsx'
+import { useMeQuery } from '@/features/auth/api/use-me.query.ts'
 import { type ChangeEvent, useState } from 'react'
 import { tracksSortFunction } from '@/pages/TracksPage/TracksSortFunction.ts'
 
 const PAGE_SIZE = 10
 
 export const TracksPage = () => {
+  const hasTokens = !!localStorage.getItem('accessToken') || !!localStorage.getItem('refreshToken')
+  const { data: me, isLoading: isMeLoading } = useMeQuery({ enabled: hasTokens })
+  const isAuthReady = hasTokens ? !isMeLoading : true
+
   const [hashtags, setHashtags] = React.useState<string[]>([])
   const [artists, setArtists] = React.useState<string[]>([])
   const [search, setSearch] = useState('')
@@ -41,12 +47,17 @@ export const TracksPage = () => {
   // todo: add sorting;
 
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
-    useTracksInfinityQuery({
+    useTracksInfinityQuery(
+      {
       pageSize: PAGE_SIZE,
       search: debouncedValue,
       sortBy,
       sortDirection,
-    })
+    },
+      {
+        enabled: isAuthReady,
+      }
+    )
   const { play, currentTrack, currentTime } = usePlayerStore()
 
   const { data: me } = useMeQuery()
@@ -69,7 +80,7 @@ export const TracksPage = () => {
           likesCount: track.attributes.likesCount,
           dislikesCount: 0, // track.attributes.dislikesCount,
           currentUserReaction: track.attributes.currentUserReaction,
-          ownerId: track.id,
+          ownerId: track.attributes.user.id,
         }))
       : []
   }, [tracks])
@@ -113,6 +124,7 @@ export const TracksPage = () => {
     threshold: 0.1,
   })
 
+  if (hasTokens && isMeLoading) return <>Loading user…</>
   if (isPending) {
     return <div>Loading...</div>
   }
@@ -158,37 +170,17 @@ export const TracksPage = () => {
       <div ref={wrapperRef}>
         <TracksTable
           trackRows={tracksRowsData}
-          renderTrackRow={(trackRow) => (
-            <TrackRow
-              key={trackRow.id}
-              trackRow={trackRow}
-              playingTrackId={currentTrack?.id}
-              playingTrackProgress={currentTime}
-              onPlayClick={handleClickPlay}
-              renderActionsCell={() => (
-                // todo: task Implement like/dislike
-                <>
-                  <ReactionButtons
-                    entityId={trackRow.id}
-                    currentReaction={trackRow.currentUserReaction}
-                    likesCount={trackRow.likesCount}
-                    onDislike={() => {}}
-                    onLike={() => {}}
-                    onRemoveReaction={() => {}}
-                  />
-
-                  {trackRow.ownerId === currentUserId && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      {/* implement add to playlist (via popup, see figma) */}
-                      <MoreIcon />
-                    </DropdownMenuTrigger>
-                  </DropdownMenu>
-                  )}
-                </>
-              )}
-            />
-          )}
+          renderTrackRow={(trackRow) => {
+            return (
+              <TrackRowContainer
+                key={trackRow.id}
+                trackRow={trackRow}
+                currentTrack={currentTrack}
+                currentTime={currentTime}
+                onPlayClick={handleClickPlay}
+              />
+            )
+          }}
         />
 
         {tracks.length === 0 && <div>No tracks found</div>}
